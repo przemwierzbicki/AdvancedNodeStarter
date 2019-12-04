@@ -9,12 +9,17 @@ client.get = util.promisify(client.get);
 
 const exec = mongoose.Query.prototype.exec;
 
-mongoose.Query.prototype.exec = function() {
-  const key = Object.assign({ }, this.getQuery(), {
+mongoose.Query.prototype.exec = async function() {
+  const key = JSON.stringify(Object.assign({ }, this.getQuery(), {
     collection: this.mongooseCollection.name,
-  });
+  }));
 
-  console.log(key);
+  const cacheValue = await client.get(key);
 
-  return exec.apply(this, arguments);
+  if (cacheValue) {
+    console.log(cacheValue);
+  }
+
+  const result = await exec.apply(this, arguments);
+  console.log(result);
 };
